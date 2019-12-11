@@ -1,0 +1,11 @@
+{
+  "name": "vue-cesium-compass",
+  "version": "1.0.1",
+  "description": "vue-cesium-compass",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "fyodor",
+  "license": "ISC"
+}
