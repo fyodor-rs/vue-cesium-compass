@@ -150,11 +150,11 @@ export default {
          var timer;
          $(className).bind({
           click: function () {
-            selectEvent(eventName,direction);
+            this.selectEvent(eventName,direction);
           },
           mousedown: function () {
             timer = setInterval(function () {
-                selectEvent(eventName,direction);
+                this.selectEvent(eventName,direction);
             }, 10)
           },
           mouseup: function () {
