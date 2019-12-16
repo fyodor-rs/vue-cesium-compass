@@ -53,7 +53,7 @@
                     />
                     <circle cx="144" cy="144" r="74.5" style="fill: none;stroke: #000;stroke-miterlimit: 10" />
                 </g>
-                <g id="Spinner">
+                <g id="Spinner" @dblclick="handledbclick">
                     <g>
                         <g>
                             <polygon points="164.15 144.12 144.31 190.1 124.47 144.12 164.15 144.12" style="fill: black" />
@@ -95,25 +95,31 @@ export default {
       this.bindEvent("zoomEvent",".plus", "in");
       this.bindEvent("zoomEvent",".minus", "out");
     },
+    watch:{
+        viewer(){
+           let _this=this 
+           this.rotateDiv(_this)
+        }
+    },
     methods:{
         getPosition(){
-            return this.viewer.camera.pickEllipsoid(new this.Cesium.Cartesian2(window.innerWidth / 2, window.innerHeight / 2), this.viewer.scene.globe.ellipsoid);
+            return this.viewer.scene.camera.pickEllipsoid(new this.Cesium.Cartesian2(window.innerWidth / 2, window.innerHeight / 2), this.viewer.scene.globe.ellipsoid);
         },
         verticalMove(position, direction){
-            if (!position) {
+           if (!position) {
                return
-            }
+           }
            var camera = this.viewer.scene.camera;
            var ellipsoid = this.viewer.scene.globe.ellipsoid;
-           var mag = Cesium.Cartesian3.magnitude(position);
-           var radii = Cesium.Cartesian3.fromElements(mag, mag, mag, new this.Cesium.Cartesian3());
-           var newEllipsoid = Cesium.Ellipsoid.fromCartesian3(radii, new this.Cesium.Ellipsoid());
+           var mag = this.Cesium.Cartesian3.magnitude(position);
+           var radii = this.Cesium.Cartesian3.fromElements(mag, mag, mag, new this.Cesium.Cartesian3());
+           var newEllipsoid = this.Cesium.Ellipsoid.fromCartesian3(radii, new this.Cesium.Ellipsoid());
            this.viewer.scene._screenSpaceCameraController._rotateFactor = 1.0;
            this.viewer.scene._screenSpaceCameraController._rotateRateRangeAdjustment = 1.0;
-           camera.constrainedAxis = Cesium.Cartesian3.UNIT_Z;
-           var oldTransform = Cesium.Matrix4.clone(camera.transform, new this.Cesium.Matrix4());
-           var transform = Cesium.Transforms.eastNorthUpToFixedFrame(position, ellipsoid, new this.Cesium.Matrix4());
-           var verticalTransform = Cesium.Transforms.eastNorthUpToFixedFrame(position, newEllipsoid, new this.Cesium.Matrix4());
+           camera.constrainedAxis = this.Cesium.Cartesian3.UNIT_Z;
+           var oldTransform = this.Cesium.Matrix4.clone(camera.transform, new this.Cesium.Matrix4());
+           var transform = this.Cesium.Transforms.eastNorthUpToFixedFrame(position, ellipsoid, new this.Cesium.Matrix4());
+           var verticalTransform = this.Cesium.Transforms.eastNorthUpToFixedFrame(position, newEllipsoid, new this.Cesium.Matrix4());
            camera._setTransform(verticalTransform);
            if (direction == "up") {
              if (camera.pitch > -0.1) {
@@ -127,7 +133,7 @@ export default {
            camera._setTransform(oldTransform);
         },
         levelMove(position,direction){
-            direction=="left"?this.viewer.scene.camera.rotate(getPosition(), 0.01):this.viewer.scene.camera.rotate(position, -0.01)
+            direction=="left"?this.viewer.scene.camera.rotate(position, 0.01):this.viewer.scene.camera.rotate(position, -0.01)
         },
         zoomEvent(direction){
             var cameraPos = this.viewer.scene.camera.position;
@@ -138,23 +144,24 @@ export default {
         },
         selectEvent(eventName,direction){
          switch(eventName){
-          case "levelMove":levelMove(getPosition(),direction);
+          case "levelMove":this.levelMove(this.getPosition(),direction);
              break;
-          case "verticalMove":verticalMove(getPosition(),direction);
+          case "verticalMove":this.verticalMove(this.getPosition(),direction);
              break;
-          case "zoomEvent":zoomEvent(direction)
+          case "zoomEvent":this.zoomEvent(direction)
              break;
           }
         },
         bindEvent(eventName,className,direction){
          var timer;
+         var _this=this
          $(className).bind({
           click: function () {
-            this.selectEvent(eventName,direction);
+            _this.selectEvent(eventName,direction);
           },
           mousedown: function () {
             timer = setInterval(function () {
-                this.selectEvent(eventName,direction);
+                _this.selectEvent(eventName,direction);
             }, 10)
           },
           mouseup: function () {
@@ -163,6 +170,26 @@ export default {
           mouseout: function () {
             clearInterval(timer)
           }
+          })
+        },
+        rotateDiv(_this){
+          if(!_this.viewer||!_this.Cesium){return}
+          _this.viewer.scene.postRender.addEventListener(function(){
+          var heading= _this.viewer.scene.camera.heading;
+          var x=-_this.Cesium.Math.toDegrees(heading);
+          var degrees="rotate("+x+"deg)";
+          $("#Spinner").css("transform",degrees);
+         });
+        },
+        handledbclick(){
+          var center= this.viewer.camera.pickEllipsoid(new this.Cesium.Cartesian2(window.innerWidth/2, window.innerHeight/2), this.viewer.scene.globe.ellipsoid)
+          let bouSph = new this.Cesium.BoundingSphere(center,0);
+          this.viewer.scene.camera.flyToBoundingSphere(bouSph,{
+            offset: new this.Cesium.HeadingPitchRange(0,
+                this.viewer.scene.camera.pitch,
+                this.Cesium.Cartesian3.distance(this.viewer.scene.camera.position, center)
+            ),
+            duration:2
           })
         }
     }
