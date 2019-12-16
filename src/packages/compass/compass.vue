@@ -256,6 +256,7 @@ export default {
 .plus-icon:after{
     content: "";
     width: 15px;
+    left: 0;
     height: 2px;
     background-color:  white;
     position: absolute;
