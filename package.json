@@ -1,8 +1,8 @@
 {
   "name": "vue-cesium-compass",
-  "description": "A Vue.js project",
+  "description": "Vue components for CesiumJS",
   "main": "dist/build.js",
-  "version": "1.0.6",
+  "version": "1.1.1",
   "author": "fyodor <13544102930@163.com>",
   "license": "MIT",
   "private": false,
