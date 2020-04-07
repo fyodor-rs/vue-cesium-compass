@@ -13,4 +13,4 @@ import cesiumCompass from 'vue-cesium-compass'
 ```
 
 bug：指南针操作缓慢，卡顿。
-bug: The compass operates slowly.
+(The compass operates slowly.)
